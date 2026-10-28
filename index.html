@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapter 8: Natural Language Processing — Keyword Flashcards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E8EEF6; --ink:#1B2440; --soft:#55607D; --card:#FFFFFF; --line:#C9D3E3;
+  --teal:#0F8B8D; --coral:#E4572E; --amber:#F2A541; --violet:#5B4B8A;
+  --chip:#F1F5FB; --shadow:0 18px 40px -18px rgba(27,36,64,.35);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#151B2E; --ink:#E8ECF6; --soft:#A6B0C9; --card:#1F2740; --line:#34406A;
+    --chip:#28324F; --shadow:0 18px 40px -18px rgba(0,0,0,.7); color-scheme: dark; }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink)}
+body{font-family:'Atkinson Hyperlegible',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 16px 40px}
+header{width:100%;max-width:760px}
+.sentence{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px;padding:0;list-style:none}
+.sentence li{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(1.4rem,4.2vw,2.2rem);
+  line-height:1.1;padding:4px 10px 6px;border-radius:8px;background:var(--card);border-bottom:4px solid var(--teal)}
+.sentence li:nth-child(2){border-color:var(--coral)} .sentence li:nth-child(3){border-color:var(--amber)} .sentence li:nth-child(4){border-color:var(--violet)}
+.sub{color:var(--soft);margin:8px 0 22px;font-size:1rem}
+main{width:100%;max-width:760px}
+.stage{perspective:1400px}
+.card{display:block;position:relative;width:100%;min-height:330px;border:0;padding:0;background:none;cursor:pointer;color:inherit;font:inherit;text-align:left;border-radius:22px}
+.card:focus-visible{outline:4px solid var(--coral);outline-offset:6px}
+.inner{display:block;position:relative;width:100%;min-height:330px;transition:transform .55s cubic-bezier(.2,.7,.2,1);transform-style:preserve-3d}
+.card[aria-pressed="true"] .inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--card);border-radius:22px;box-shadow:var(--shadow);
+  padding:30px 30px 26px;display:flex;flex-direction:column;border:1px solid var(--line)}
+.back{transform:rotateY(180deg)}
+.label{font-size:.9rem;color:var(--soft);display:flex;justify-content:space-between;gap:8px}
+.tokens{flex:1;display:flex;flex-wrap:wrap;align-content:center;gap:10px;margin:18px 0}
+.tok{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(1.6rem,5vw,2.6rem);padding:8px 14px 10px;background:var(--chip);border-radius:12px;
+  border-bottom:5px solid var(--teal);line-height:1.05}
+.tok:nth-child(4n+2){border-color:var(--coral)} .tok:nth-child(4n+3){border-color:var(--amber)} .tok:nth-child(4n+4){border-color:var(--violet)}
+.hint{display:block;color:var(--soft);font-size:.92rem}
+.def{flex:1;display:flex;align-items:center;font-size:clamp(1.15rem,2.6vw,1.45rem);line-height:1.55;margin:14px 0}
+.wave{display:flex;gap:4px;align-items:flex-end;height:26px}
+.wave i{display:block;width:5px;border-radius:3px;background:var(--teal);opacity:.75}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:24px 0 14px}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+button.ctl{font:700 1rem 'Atkinson Hyperlegible',sans-serif;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:999px;padding:10px 18px;cursor:pointer}
+button.ctl:hover{border-color:var(--teal)}
+button.ctl:focus-visible{outline:3px solid var(--coral);outline-offset:3px}
+button.ctl.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.progress{font-weight:700;font-size:1.05rem}
+.strip{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;padding:0;list-style:none}
+.strip button{width:34px;height:34px;border-radius:8px;border:2px solid var(--line);background:var(--card);color:var(--soft);font:700 .85rem 'Atkinson Hyperlegible',sans-serif;cursor:pointer}
+.strip button[aria-current="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+.strip button.seen{border-color:var(--amber)}
+.strip button:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
+.keys{color:var(--soft);font-size:.9rem;margin-top:18px}
+kbd{font-family:inherit;font-weight:700;background:var(--card);border:1px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:1px 6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion: reduce){
+  .inner{transition:none}
+  .card[aria-pressed="true"] .inner{transform:none}
+  .back{transform:none;opacity:0}
+  .card[aria-pressed="true"] .front{opacity:0}
+  .card[aria-pressed="true"] .back{opacity:1}
+}
+@media (max-width:520px){ .face{padding:22px 20px} .card,.inner{min-height:380px} }
+</style>
+</head>
+<body>
+<header>
+  <ul class="sentence" aria-label="Natural Language Processing">
+    <li>Natural</li><li>Language</li><li>Processing</li>
+  </ul>
+  <p class="sub">Chapter 8 keyword flashcards · Grade 8. Each term is shown split into tokens — flip the card to read what it means.</p>
+</header>
+<main>
+  <div class="stage">
+    <button class="card" id="card" aria-pressed="false" aria-describedby="flipHelp">
+      <span class="inner">
+        <span class="face front">
+          <span class="label"><span id="numF"></span><span id="tokCount"></span></span>
+          <span class="tokens" id="tokens"></span>
+          <span class="hint">Tap, click, or press Enter to flip</span>
+        </span>
+        <span class="face back" aria-hidden="true">
+          <span class="label"><span id="termB"></span><span>Definition</span></span>
+          <span class="def" id="def"></span>
+          <span class="wave" aria-hidden="true" id="wave"></span>
+        </span>
+      </span>
+    </button>
+    <span class="sr" id="flipHelp">Press Enter or Space to flip. Use the left and right arrow keys to move between cards.</span>
+  </div>
+  <div class="controls">
+    <span class="progress" id="progress" aria-live="polite"></span>
+    <div class="btns">
+      <button class="ctl" id="prev">Previous</button>
+      <button class="ctl primary" id="flip">Flip card</button>
+      <button class="ctl" id="next">Next</button>
+      <button class="ctl" id="shuffle">Shuffle</button>
+    </div>
+  </div>
+  <nav aria-label="Jump to a card"><ul class="strip" id="strip"></ul></nav>
+  <p class="keys"><kbd>←</kbd> <kbd>→</kbd> move · <kbd>Enter</kbd> or <kbd>Space</kbd> flip · <kbd>S</kbd> shuffle</p>
+</main>
+<script>
+const CARDS = [{"t":"Knowledge Base","d":"The stored collection of source content that an NLP system compares words against to find their meaning and produce a response."},{"t":"Lemmatization","d":"An NLP technique that reduces a word to its dictionary base form, called the lemma, while keeping its meaning — \"sings\", \"singing\" and \"sung\" all become \"sing\"."},{"t":"Named Entity Recognition (NER)","d":"An NLP task that finds and labels important names in text, such as people, places, organisations and dates."},{"t":"Natural Language Generation (NLG)","d":"The component of NLP that converts computerised data into natural human language, so the machine can reply in speech or text."},{"t":"Natural Language Processing (NLP)","d":"A domain of Artificial Intelligence that enables computers to understand, interpret and generate human language."},{"t":"Natural Language Understanding (NLU)","d":"The component of NLP that helps a machine understand and analyse human language by extracting information such as concepts, keywords and emotions."},{"t":"Parts of Speech (PoS) Tagging","d":"The step in which each token is labelled with its part of speech, such as noun, verb, adjective or pronoun."},{"t":"Semantic Analysis","d":"The process in which a computer tries to understand the meaning behind the words in a sentence, not just its grammar or structure."},{"t":"Sentence Segmentation","d":"The first step of text normalisation, in which a paragraph is broken into separate sentences."},{"t":"Sentiment Analysis","d":"An NLP task that classifies the feeling expressed in a sentence as positive, negative or neutral."},{"t":"Speech Recognition","d":"An NLP task that converts spoken words into written text."},{"t":"Stemming","d":"An NLP technique that removes affixes from a word to reach its root form — \"playing\" becomes \"play\" — even if the result is not always a real word."},{"t":"Stop Words","d":"Common words such as \"the\", \"is\" and \"in\" that carry little meaning and are removed during stop word removal."},{"t":"Text Normalisation","d":"The preprocessing process of converting text into a standard, simplified form so that it is clean and ready for analysis."},{"t":"Tokenization","d":"The process of breaking speech or text into smaller units called tokens, which can be words, clauses or punctuation marks."},{"t":"Topic Analysis","d":"An NLP technique that identifies the main topic of a text by finding recurring themes and tags it with a suitable category."}];
+let order = CARDS.map((_, i) => i), pos = 0;
+const seen = new Set();
+const $ = id => document.getElementById(id);
+const card = $('card'), back = card.querySelector('.back'), front = card.querySelector('.front');
+
+function tokenize(term){ return term.replace(/[()]/g, m => ' ' + m + ' ').split(/\s+/).filter(Boolean); }
+function render(){
+  const c = CARDS[order[pos]];
+  const toks = tokenize(c.t);
+  $('tokens').innerHTML = '';
+  toks.forEach(t => { const s = document.createElement('span'); s.className = 'tok'; s.textContent = t; $('tokens').appendChild(s); });
+  $('numF').textContent = 'Keyword ' + (pos + 1);
+  $('tokCount').textContent = toks.length + (toks.length === 1 ? ' token' : ' tokens');
+  $('termB').textContent = c.t;
+  $('def').textContent = c.d;
+  $('wave').innerHTML = '';
+  const words = c.d.split(/\s+/);
+  for (let i = 0; i < Math.min(words.length, 28); i++){ const b = document.createElement('i'); b.style.height = (6 + (words[i].length * 2.4) % 20) + 'px'; $('wave').appendChild(b); }
+  setFlipped(false);
+  seen.add(order[pos]);
+  $('progress').textContent = 'Card ' + (pos + 1) + ' of ' + CARDS.length + ' · ' + seen.size + ' viewed';
+  card.setAttribute('aria-label', 'Card ' + (pos + 1) + ' of ' + CARDS.length + ': ' + c.t);
+  [...$('strip').children].forEach((li, i) => {
+    const b = li.firstChild; b.setAttribute('aria-current', i === pos ? 'true' : 'false');
+    b.classList.toggle('seen', seen.has(order[i]) && i !== pos);
+    b.setAttribute('aria-label', 'Go to card ' + (i + 1) + ': ' + CARDS[order[i]].t);
+  });
+}
+function setFlipped(v){
+  card.setAttribute('aria-pressed', v ? 'true' : 'false');
+  back.setAttribute('aria-hidden', v ? 'false' : 'true');
+  front.setAttribute('aria-hidden', v ? 'true' : 'false');
+  $('flip').textContent = v ? 'Show term' : 'Flip card';
+  if (v) card.setAttribute('aria-label', CARDS[order[pos]].t + ': ' + CARDS[order[pos]].d);
+}
+function flip(){ setFlipped(card.getAttribute('aria-pressed') !== 'true'); }
+function go(d){ pos = (pos + d + CARDS.length) % CARDS.length; render(); }
+function buildStrip(){
+  $('strip').innerHTML = '';
+  order.forEach((_, i) => { const li = document.createElement('li'); const b = document.createElement('button'); b.textContent = i + 1; b.addEventListener('click', () => { pos = i; render(); card.focus(); }); li.appendChild(b); $('strip').appendChild(li); });
+}
+function shuffle(){
+  for (let i = order.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  pos = 0; buildStrip(); render();
+}
+card.addEventListener('click', flip);
+$('flip').addEventListener('click', flip);
+$('prev').addEventListener('click', () => go(-1));
+$('next').addEventListener('click', () => go(1));
+$('shuffle').addEventListener('click', shuffle);
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowRight') { go(1); e.preventDefault(); }
+  else if (e.key === 'ArrowLeft') { go(-1); e.preventDefault(); }
+  else if (e.key === 's' || e.key === 'S') shuffle();
+});
+buildStrip(); render();
+</script>
+</body>
+</html>
